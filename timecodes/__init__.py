@@ -41,15 +41,11 @@ class Timecode(object):
 	
 	"""
 	
-	def __init__(self, timecode, frame_rate=None, is_drop_frame=None, starting_timecode=None):
+	def __init__(self, timecode, frame_rate, is_drop_frame=None, starting_timecode=None):
 		if type(timecode) != Timecode:
-			frame_rate = Decimal(frame_rate)
-			is_drop_frame = is_drop_frame if is_drop_frame in (True, False, None) else None
-			starting_timecode = Timecode(starting_timecode, frame_rate=frame_rate, is_drop_frame=is_drop_frame) if starting_timecode else None
-			
 			self.__dict__.update({
 				'is_drop_frame': None,
-				'starting_timecode': starting_timecode,
+				'starting_timecode': None,
 				'hours': None,
 				'minutes': None,
 				'seconds': None,
@@ -61,6 +57,7 @@ class Timecode(object):
 			self.frame_rate = frame_rate
 			self.is_drop_frame = is_drop_frame
 			self.timecode = timecode
+			self.starting_timecode = starting_timecode
 		
 		else:
 			self.__dict__.update(timecode.__dict__)
@@ -75,12 +72,15 @@ class Timecode(object):
 			elif type(value) in (int, long):
 				name = 'total_frames'
 		
-		if name == 'is_drop_frame' and value is None:
+		elif name == 'is_drop_frame' and value is None:
 			value = True if self.frame_rate in (29.97, 59.94) else False
 		
 		elif name == 'frame_rate':
 			value = 23.976 if value == 23.98 else value
 			self._frame_rate_int = int(round(value))
+		
+		if isinstance(value, float):
+			value = Decimal(str(value))
 		
 		super(Timecode, self).__setattr__(name, value)
 		
@@ -91,7 +91,7 @@ class Timecode(object):
 			self.__dict__['starting_timecode'] = Timecode(self.starting_timecode.total_frames, frame_rate=self.frame_rate, is_drop_frame=self.is_drop_frame)
 		
 		elif name == 'starting_timecode':
-			self.__dict__['starting_timecode'] = Timecode(self.starting_timecode, frame_rate=self.frame_rate, is_drop_frame=self.is_drop_frame)
+			self.__dict__['starting_timecode'] = Timecode(value, frame_rate=self.frame_rate, is_drop_frame=self.is_drop_frame) if value else None
 			self.__dict__.update(self.__components_to_total_seconds())
 			self.__dict__.update(self.__components_to_total_frames())
 		
@@ -122,7 +122,7 @@ class Timecode(object):
 	
 	def __validate_inputs(self, name, value):
 		if name in ('timecode', 'starting_timecode'):
-			if all([not isinstance(value, valid_type) for valid_type in (Timecode, float, int, long, basestring)]):
+			if all([not isinstance(value, valid_type) for valid_type in (Timecode, float, int, long, basestring)]) and not (name == 'starting_timecode' and value is None):
 				raise TypeError("Bad {name}: expected instance of Timecode, float, int, long, basestring, got {type}.".format(name=name, type=type(value)))
 			
 			elif isinstance(value, basestring) and not re.match(r'^.*?([0-9]{2,})[:;]?([0-5][0-9])[:;]?([0-5][0-9])[:;]?([0-9]{1,}).*?$', value):
