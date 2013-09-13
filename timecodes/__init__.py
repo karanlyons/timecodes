@@ -4,6 +4,7 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import operator
 import re
+import sys
 from decimal import Decimal
 from math import floor
 
@@ -17,6 +18,11 @@ __contact__ = 'karan@karanlyons.com'
 __homepage__ = 'https://github.com/karanlyons/timecodes'
 __license__ = 'Apache 2.0'
 __copyright__ = 'Copyright 2013 Karan Lyons'
+
+
+if sys.version_info[0] >= 3:
+	long = Decimal
+	basestring = str
 
 
 class Timecode(object):
