@@ -20,7 +20,7 @@ __license__ = 'Apache 2.0'
 __copyright__ = 'Copyright 2013 Karan Lyons'
 
 
-if sys.version_info[0] >= 3:
+if sys.version_info[0] >= 3: # pragma: no cover (version compatibility, unreachable in py2)
 	long = Decimal
 	basestring = str
 
@@ -43,12 +43,12 @@ class Timecode(object):
 	
 	def __init__(self, timecode, frame_rate=None, is_drop_frame=None, starting_timecode=None):
 		if type(timecode) != Timecode:
-			frame_rate = float(frame_rate)
+			frame_rate = Decimal(frame_rate)
 			is_drop_frame = is_drop_frame if is_drop_frame in (True, False, None) else None
 			starting_timecode = Timecode(starting_timecode, frame_rate=frame_rate, is_drop_frame=is_drop_frame) if starting_timecode else None
 			
 			self.__dict__.update({
-				'is_drop_frame': is_drop_frame,
+				'is_drop_frame': None,
 				'starting_timecode': starting_timecode,
 				'hours': None,
 				'minutes': None,
@@ -59,6 +59,7 @@ class Timecode(object):
 			})
 			
 			self.frame_rate = frame_rate
+			self.is_drop_frame = is_drop_frame
 			self.timecode = timecode
 		
 		else:
@@ -74,15 +75,16 @@ class Timecode(object):
 			elif type(value) in (int, long):
 				name = 'total_frames'
 		
-		super(Timecode, self).__setattr__(name, value)
-		
-		if name == 'is_drop_frame':
-			if self.is_drop_frame is None:
-				self.is_drop_frame = True if self.frame_rate in (29.97, 59.94) else False
+		if name == 'is_drop_frame' and value is None:
+			value = True if self.frame_rate in (29.97, 59.94) else False
 		
 		elif name == 'frame_rate':
-			self.__dict__['frame_rate'] = 23.976 if value == 23.98 else value
-			self._frame_rate_int = int(round(self.frame_rate))
+			value = 23.976 if value == 23.98 else value
+			self._frame_rate_int = int(round(value))
+		
+		super(Timecode, self).__setattr__(name, value)
+		
+		if name == 'frame_rate':
 			self.is_drop_frame = None
 		
 		if name in ('frame_rate', 'is_drop_frame') and self.starting_timecode:
@@ -255,10 +257,10 @@ class Timecode(object):
 				if self.frame_rate == 59.94: # Double for 59.94
 					dropped *= 2
 				
-				return dropped
+				return int(dropped)
 			
 			else:
-				raise Exception
+				raise RuntimeError('is_drop_frame is True, but frame_rate is not in (29.97, 59.94). This should never happen.')
 		
 		else:
 			return 0

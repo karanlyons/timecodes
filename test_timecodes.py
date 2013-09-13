@@ -20,6 +20,7 @@ class TimecodesTestCase(unittest.TestCase):
 			Timecode('00:02:00;01', 29.97),
 			Timecode('00:59:59;31', 29.97),
 			Timecode('01:00:00;00', 29.97), # 3600.0, 107892
+			Timecode(107892, 29.97),
 			Timecode('02:00:00:00', 29.97, starting_timecode=107892),
 			Timecode('24:00:00:00', 29.97),
 		)
