@@ -19,10 +19,10 @@ Working with timecodes can suck. It shouldn't have to:
 	107892
 	>>> t.hours += 1
 	>>> t.timecode, t.total_frames
-	(u'02:00:00;00', 107892)
+	(u'02:00:00;00', 215784)
 	>>> t.convert_to(frame_rate=24, preserving='timecode')
 	>>> t.timecode, t.total_frames
-	(u'02:00:00;00', 172800)
+	(u'02:00:00:00', 172800)
 
 
 Installation

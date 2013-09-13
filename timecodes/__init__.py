@@ -65,22 +65,22 @@ class Timecode(object):
 	def __setattr__(self, name, value):
 		self.__validate_inputs(name, value)
 		
+		if isinstance(value, float):
+			value = Decimal(str(value))
+		
 		if name == 'timecode' and not isinstance(value, basestring):
-			if type(value) in (float, Decimal):
+			if type(value) == Decimal:
 				name = 'total_seconds'
 			
 			elif type(value) in (int, long):
 				name = 'total_frames'
 		
 		elif name == 'is_drop_frame' and value is None:
-			value = True if self.frame_rate in (29.97, 59.94) else False
+			value = True if self.frame_rate in (Decimal('29.97'), Decimal('59.94')) else False
 		
 		elif name == 'frame_rate':
-			value = 23.976 if value == 23.98 else value
+			value = Decimal('23.976') if value == Decimal('23.976') else value
 			self._frame_rate_int = int(round(value))
-		
-		if isinstance(value, float):
-			value = Decimal(str(value))
 		
 		super(Timecode, self).__setattr__(name, value)
 		
@@ -159,10 +159,10 @@ class Timecode(object):
 		minutes %= 60
 		
 		if self.is_drop_frame and (minutes % 10):
-			if self.frame_rate == 29.97 and frames < 2:
+			if self.frame_rate == Decimal('29.97') and frames < 2:
 				frames += 2
 			
-			elif self.frame_rate == 59.94 and frames < 4:
+			elif self.frame_rate == Decimal('59.94') and frames < 4:
 				frames += 4
 		
 		return {'hours': hours, 'minutes': minutes, 'seconds': seconds, 'frames': frames}
@@ -195,7 +195,7 @@ class Timecode(object):
 		if self.is_drop_frame:
 			drop_fix = 2 * (self.minutes % 10)
 			
-			if self.frame_rate == 59.94:
+			if self.frame_rate == Decimal('59.94'):
 				drop_fix *= 2
 		
 		total_seconds = (self.hours * 3600) + (self.minutes * 60) + self.seconds + (Decimal(self.frames - drop_fix) / self._frame_rate_int)
@@ -239,7 +239,7 @@ class Timecode(object):
 		"""
 		
 		if self.is_drop_frame:
-			if self.frame_rate in (29.97, 59.94):
+			if self.frame_rate in (Decimal('29.97'), Decimal('59.94')):
 				if using == 'components':
 					hours = self.hours
 					minutes = self.minutes
@@ -254,7 +254,7 @@ class Timecode(object):
 				
 				dropped = (hours * 108) + ((minutes / 10) * 18) + (minutes % 10 * 2) # "Drop" 2 frames every minute except every tenth.
 				
-				if self.frame_rate == 59.94: # Double for 59.94
+				if self.frame_rate == Decimal('59.94'): # Double for 59.94
 					dropped *= 2
 				
 				return int(dropped)
@@ -282,11 +282,14 @@ class Timecode(object):
 		if preserving not in ('seconds', 'frames', 'timecode'):
 			preserving = 'seconds'
 		
+		if is_drop_frame is None:
+			is_drop_frame = self.is_drop_frame
+		
 		if frame_rate is None:
 			frame_rate = self.frame_rate
 		
-		if is_drop_frame is None:
-			is_drop_frame = self.is_drop_frame
+		else:
+			is_drop_frame = None
 		
 		if starting_timecode is None:
 			starting_timecode = self.starting_timecode
@@ -302,8 +305,6 @@ class Timecode(object):
 		
 		elif preserving == 'timecode':
 			self.__init__(self.timecode, frame_rate, is_drop_frame, starting_timecode.convert_to(frame_rate, is_drop_frame, None, preserving) if starting_timecode else None)
-		
-		return self
 	
 	def __str__(self):
 		return self.timecode
