@@ -38,5 +38,5 @@ setup(
 		'Programming Language :: Python :: 3.2',
 		'Programming Language :: Python :: 3.3',
 	),
-	test_suite='test_timecodes',
+	test_suite='nose.collector',
 )
