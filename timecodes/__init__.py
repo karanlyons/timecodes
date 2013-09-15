@@ -302,7 +302,7 @@ class Timecode(object):
 			return Timecode(op(self.total_seconds, other.total_seconds), self.frame_rate, self.is_drop_frame)
 		
 		elif type(other) in (float, Decimal):
-			return Timecode(op(self.total_seconds, Decimal(other)), self.frame_rate, self.is_drop_frame)
+			return Timecode(op(self.total_seconds, Decimal(str(other))), self.frame_rate, self.is_drop_frame)
 		
 		elif type(other) in (int, long):
 			return Timecode(op(self.total_frames, other), self.frame_rate, self.is_drop_frame)
@@ -330,7 +330,7 @@ class Timecode(object):
 			return self._op(op, other)
 		
 		elif type(other) in (float, Decimal):
-			return self._op(op, other).total_seconds
+			return self._op(op, Decimal(str(other))).total_seconds
 		
 		elif type(other) in (int, long):
 			return self._op(op, other).total_frames
@@ -358,7 +358,7 @@ class Timecode(object):
 			return self.total_seconds == other.total_seconds
 		
 		elif type(other) in (float, Decimal):
-			return self.total_seconds == other
+			return self.total_seconds == Decimal(str(other))
 		
 		elif type(other) in (int, long):
 			return self.total_frames == other
@@ -377,7 +377,7 @@ class Timecode(object):
 			return self.total_seconds > other.total_seconds
 		
 		elif type(other) in (float, Decimal):
-			return self.total_seconds > other
+			return self.total_seconds > Decimal(str(other))
 		
 		elif type(other) in (int, long):
 			return self.total_frames > other
