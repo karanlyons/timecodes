@@ -55,8 +55,8 @@ class Timecode(object):
 			'total_frames': None,
 		})
 		
-		self.frame_rate = frame_rate
 		self.is_drop_frame = is_drop_frame
+		self.frame_rate = frame_rate
 		
 		if any([isinstance(timecode, seconds_type) for seconds_type in (float, Decimal)]):
 			self.total_seconds = timecode
@@ -74,7 +74,7 @@ class Timecode(object):
 			value = True if self.frame_rate in (Decimal('29.97'), Decimal('59.94')) else False
 		
 		elif name == 'frame_rate':
-			value = Decimal('23.976') if value == Decimal('23.976') else value
+			value = Decimal('23.976') if value == Decimal('23.98') else value
 			self._frame_rate_int = int(round(value))
 			
 			if value not in (Decimal('29.97'), Decimal('59.94')):
@@ -295,7 +295,7 @@ class Timecode(object):
 		return self.timecode
 	
 	def __repr__(self):
-		return "Timecode(timecode='%s', frame_rate=%.2f, is_drop_frame=%s)" % (self.timecode, self.frame_rate, self.is_drop_frame)
+		return "Timecode(timecode='%s', frame_rate=%s, is_drop_frame=%s)" % (self.timecode, repr(self.frame_rate), self.is_drop_frame)
 	
 	def _op(self, op, other):
 		if type(other) == Timecode:
